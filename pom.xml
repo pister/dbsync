@@ -28,24 +28,11 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>wint</groupId>
-            <artifactId>wint-framework</artifactId>
-            <version>1.5.7.3-m</version>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.github.pister</groupId>
-            <artifactId>tson</artifactId>
-            <version>1.0</version>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
             <groupId>com.caucho</groupId>
             <artifactId>hessian</artifactId>
             <version>4.0.65</version>
             <scope>provided</scope>
         </dependency>
-
         <dependency>
             <groupId>com.alibaba</groupId>
             <artifactId>druid</artifactId>
@@ -62,6 +49,12 @@
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>
             <version>1.0.1</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>mysql</groupId>
+            <artifactId>mysql-connector-java</artifactId>
+            <version>5.1.9</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
