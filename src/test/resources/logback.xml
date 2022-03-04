@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="gbk"?>
+<!DOCTYPE configuration>
+
+<configuration>
+    <jmxConfigurator />
+
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <layout class="ch.qos.logback.classic.PatternLayout">
+            <pattern>%d %-5p %c{2} - %m%n</pattern>
+        </layout>
+    </appender>
+
+    <logger name="org.apache.commons.beanutils">
+        <level value="error"/>
+    </logger>
+    <logger name="org.apache.commons.digester">
+        <level value="error"/>
+    </logger>
+
+    <root>
+        <level value="info"/>
+        <appender-ref ref="STDOUT"/>
+    </root>
+</configuration>
