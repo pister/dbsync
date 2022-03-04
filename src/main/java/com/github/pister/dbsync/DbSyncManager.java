@@ -6,6 +6,7 @@ import com.github.pister.dbsync.config.mapping.TableTaskConfig;
 import com.github.pister.dbsync.endpoint.client.DbSyncClient;
 import com.github.pister.dbsync.endpoint.server.DbSyncServer;
 import com.github.pister.dbsync.endpoint.server.DefaultDbSyncServer;
+import com.github.pister.dbsync.runtime.sync.NopProcessListener;
 import com.github.pister.dbsync.runtime.sync.ProcessListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,18 +42,7 @@ public class DbSyncManager {
 
     private DbSyncClient dest;
 
-    private ProcessListener processListener = new ProcessListener() {
-        @Override
-        public void onProcess(String taskName, int rows) {
-            // nop
-        }
-
-        @Override
-        public void onFinish(String taskName) {
-            // nop
-        }
-    };
-
+    private ProcessListener processListener = new NopProcessListener();
 
     /**
      * 通过索引注册数据库相关配置，
@@ -119,8 +109,8 @@ public class DbSyncManager {
         }
         DbSyncServer source = initTransferServer();
         DbSyncClient dest = initTableTransferClient(source);
-        this.dest = dest;
         final int poolSize = Math.min(dest.getTasks().size(), 5);
+        this.dest = dest;
         this.executorService = new ThreadPoolExecutor(poolSize, poolSize,
                 0L, TimeUnit.MILLISECONDS,
                 new LinkedBlockingQueue<Runnable>(1024));
