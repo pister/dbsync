@@ -1,9 +1,11 @@
 package com.github.pister.dbsync.config.mapping;
 
-import com.github.pister.dbsync.util.CollectionUtil;
+import com.github.pister.dbsync.common.db.shard.DefaultShardStrategy;
+import com.github.pister.dbsync.common.db.shard.ShardStrategy;
+import com.github.pister.dbsync.common.tools.util.CollectionUtil;
 import com.github.pister.dbsync.config.DbConfig;
 import com.github.pister.dbsync.config.TableConfig;
-import com.github.pister.dbsync.util.MapUtil;
+import com.github.pister.dbsync.common.tools.util.MapUtil;
 
 import java.util.List;
 import java.util.Map;
@@ -51,7 +53,7 @@ public class RichTableConfig {
      */
     private int tableCountPerDb;
 
-
+    private ShardStrategy shardStrategy = new DefaultShardStrategy();
 
     public static RichTableConfig makeSingle(int dbIndex, String tableName) {
         RichTableConfig tableTaskConfig = new RichTableConfig();
@@ -62,7 +64,7 @@ public class RichTableConfig {
     }
 
     public static RichTableConfig makeOneTooManyShard(String tableFormat,
-                                                      String routeColumn, int dbCount, int tableCountPerDb, int dbIndexOffset) {
+                                                      String routeColumn, int dbCount, int tableCountPerDb, int dbIndexOffset, ShardStrategy shardStrategy) {
         RichTableConfig tableTaskConfig = new RichTableConfig();
         tableTaskConfig.setShardSupport(true);
         tableTaskConfig.setTableName(tableFormat);
@@ -70,12 +72,17 @@ public class RichTableConfig {
         tableTaskConfig.setDbIndexOffset(dbIndexOffset);
         tableTaskConfig.setDbCount(dbCount);
         tableTaskConfig.setTableCountPerDb(tableCountPerDb);
+        tableTaskConfig.setShardStrategy(shardStrategy);
         return tableTaskConfig;
     }
 
+    public static RichTableConfig makeOneTooManyShard(String tableFormat,
+                                                      String routeColumn, int dbCount, int tableCountPerDb, int dbIndexOffset) {
+        return makeOneTooManyShard(tableFormat, routeColumn, dbCount, tableCountPerDb, dbIndexOffset, new DefaultShardStrategy());
+    }
 
 
-    public String getTableName() {
+        public String getTableName() {
         return tableName;
     }
 
@@ -154,5 +161,13 @@ public class RichTableConfig {
 
     public void setDbIndexOffset(int dbIndexOffset) {
         this.dbIndexOffset = dbIndexOffset;
+    }
+
+    public ShardStrategy getShardStrategy() {
+        return shardStrategy;
+    }
+
+    public void setShardStrategy(ShardStrategy shardStrategy) {
+        this.shardStrategy = shardStrategy;
     }
 }

@@ -1,8 +1,8 @@
 package com.github.pister.dbsync;
 
 import com.github.pister.dbsync.config.DbConfig;
-import com.github.pister.dbsync.db.DbPool;
-import com.github.pister.dbsync.util.MySqlUtil;
+import com.github.pister.dbsync.common.db.DbPool;
+import com.github.pister.dbsync.common.tools.util.MySqlUtil;
 import junit.framework.TestCase;
 
 import java.sql.SQLException;

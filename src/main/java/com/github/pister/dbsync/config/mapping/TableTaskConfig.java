@@ -1,8 +1,8 @@
 package com.github.pister.dbsync.config.mapping;
 
-import com.github.pister.dbsync.aop.BatchInterceptor;
-import com.github.pister.dbsync.aop.RowInterceptor;
-import com.github.pister.dbsync.util.MapUtil;
+import com.github.pister.dbsync.runtime.aop.BatchInterceptor;
+import com.github.pister.dbsync.runtime.aop.RowInterceptor;
+import com.github.pister.dbsync.common.tools.util.MapUtil;
 
 import java.util.Map;
 

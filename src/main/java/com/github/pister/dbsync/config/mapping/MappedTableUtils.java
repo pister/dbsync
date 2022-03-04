@@ -13,7 +13,7 @@ public class MappedTableUtils {
         MappedTable mappedTable;
         if (richTableConfig.isShardSupport()) {
             mappedTable = new ShardMappedTable(richTableConfig.getRouteColumn(), richTableConfig.getDbCount(),
-                    richTableConfig.getTableCountPerDb(), richTableConfig.getDbIndexOffset());
+                    richTableConfig.getTableCountPerDb(), richTableConfig.getDbIndexOffset(), richTableConfig.getShardStrategy());
         } else {
             SingleMappedTable singleMappedTable = new SingleMappedTable();
             singleMappedTable.setDbIndex(richTableConfig.getSingleTableDbIndex());

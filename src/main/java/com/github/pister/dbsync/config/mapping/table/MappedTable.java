@@ -1,9 +1,9 @@
 package com.github.pister.dbsync.config.mapping.table;
 
-import com.github.pister.dbsync.scan.MagicDb;
-import com.github.pister.dbsync.TransferServer;
-import com.github.pister.dbsync.aop.BatchInterceptor;
-import com.github.pister.dbsync.aop.RowInterceptor;
+import com.github.pister.dbsync.endpoint.server.DbSyncServer;
+import com.github.pister.dbsync.common.db.MagicDb;
+import com.github.pister.dbsync.runtime.aop.BatchInterceptor;
+import com.github.pister.dbsync.runtime.aop.RowInterceptor;
 import com.github.pister.dbsync.config.Column;
 import com.github.pister.dbsync.config.Columns;
 import com.github.pister.dbsync.config.DbConfig;
@@ -112,7 +112,7 @@ public abstract class MappedTable {
         return false;
     }
 
-    public abstract void check(TransferServer transferServer, MagicDb magicDb, List<DbConfig> dbConfigList) throws SQLException;
+    public abstract void check(DbSyncServer dbSyncServer, MagicDb magicDb, Map<Integer, DbConfig> localDbConfigs) throws SQLException;
 
 
     public int getRemoteDbIndex() {

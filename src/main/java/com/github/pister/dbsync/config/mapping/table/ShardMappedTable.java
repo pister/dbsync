@@ -1,16 +1,16 @@
 package com.github.pister.dbsync.config.mapping.table;
 
-import com.github.pister.dbsync.TransferServer;
+import com.github.pister.dbsync.endpoint.server.DbSyncServer;
+import com.github.pister.dbsync.common.db.shard.ShardStrategy;
 import com.github.pister.dbsync.config.Column;
-import com.github.pister.dbsync.rt.Row;
-import com.github.pister.dbsync.scan.MagicDb;
+import com.github.pister.dbsync.runtime.exec.Row;
+import com.github.pister.dbsync.common.db.MagicDb;
 import com.github.pister.dbsync.config.Columns;
 import com.github.pister.dbsync.config.DbConfig;
 import com.github.pister.dbsync.config.TableConfig;
-import com.github.pister.dbsync.rt.FieldValue;
-import com.github.pister.dbsync.shard.RouteUtil;
-import com.github.pister.dbsync.shard.ShardInfo;
-import com.github.pister.dbsync.util.MapUtil;
+import com.github.pister.dbsync.runtime.exec.FieldValue;
+import com.github.pister.dbsync.common.db.shard.ShardInfo;
+import com.github.pister.dbsync.common.tools.util.MapUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -25,6 +25,8 @@ public class ShardMappedTable extends MappedTable {
 
     private static final Logger log = LoggerFactory.getLogger(ShardMappedTable.class);
 
+    private ShardStrategy shardStrategy;
+
     private String routeColumn;
 
     private int dbIndexOffset = 0;
@@ -33,11 +35,12 @@ public class ShardMappedTable extends MappedTable {
 
     private int tableCountPerDb = 1;
 
-    public ShardMappedTable(String routeColumn, int dbCount, int tableCountPerDb, int dbIndexOffset) {
+    public ShardMappedTable(String routeColumn, int dbCount, int tableCountPerDb, int dbIndexOffset, ShardStrategy shardStrategy) {
         this.routeColumn = routeColumn;
         this.dbCount = dbCount;
         this.tableCountPerDb = tableCountPerDb;
         this.dbIndexOffset = dbIndexOffset;
+        this.shardStrategy = shardStrategy;
     }
 
     @Override
@@ -50,12 +53,9 @@ public class ShardMappedTable extends MappedTable {
     }
 
     @Override
-    public void check(TransferServer transferServer, MagicDb magicDb, List<DbConfig> localDbConfigList) throws SQLException {
+    public void check(DbSyncServer dbSyncServer, MagicDb magicDb, Map<Integer, DbConfig> localDbConfigs) throws SQLException {
         log.warn("checking " + getLocalTable() + " ...");
-        if (dbCount + dbIndexOffset > localDbConfigList.size()) {
-            throw new RuntimeException("db and  not match, need: " + dbCount + " and index offset:" + dbIndexOffset + " but count:" + localDbConfigList.size());
-        }
-        final Columns remoteColumns = transferServer.getColumns(getRemoteDbIndex(), getRemoteTable());
+        final Columns remoteColumns = dbSyncServer.getColumns(getRemoteDbIndex(), getRemoteTable());
         if (remoteColumns == null) {
             throw new RuntimeException("can not found table: " + getRemoteTable() + " on the source db index: " + getRemoteDbIndex());
         }
@@ -67,7 +67,10 @@ public class ShardMappedTable extends MappedTable {
 
         int tableIndex = 0;
         for (int dbIndex = dbIndexOffset; dbIndex < dbCount + dbIndexOffset; dbIndex++) {
-            DbConfig dbConfig = localDbConfigList.get(dbIndex);
+            DbConfig dbConfig = localDbConfigs.get(dbIndex);
+            if (dbConfig == null) {
+                throw new RuntimeException("local db not exist by index:" + dbIndex);
+            }
             for (int i = 0; i < tableCountPerDb; i++) {
                 String tableName = formatTableName(dbIndex, tableIndex);
                 log.warn("checking shard table: " + tableName + " ...");
@@ -88,7 +91,7 @@ public class ShardMappedTable extends MappedTable {
     }
 
     public ShardInfo route(Object routeValue) {
-        final long longValue = RouteUtil.getLongValue(routeValue);
+        final long longValue = shardStrategy.routing(routeValue);
         int totalTableCount = dbCount * tableCountPerDb;
         if (totalTableCount == 0) {
             throw new RuntimeException("totalTableCount can not be zero!");

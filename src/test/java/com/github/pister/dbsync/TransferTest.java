@@ -1,20 +1,23 @@
 package com.github.pister.dbsync;
 
-import com.github.pister.dbsync.aop.AopContext;
-import com.github.pister.dbsync.aop.BatchInterceptor;
-import com.github.pister.dbsync.aop.InterceptorResult;
+import com.github.pister.dbsync.endpoint.client.DbSyncClient;
+import com.github.pister.dbsync.endpoint.server.DbSyncServer;
+import com.github.pister.dbsync.endpoint.server.DefaultDbSyncServer;
+import com.github.pister.dbsync.runtime.aop.AopContext;
+import com.github.pister.dbsync.runtime.aop.BatchInterceptor;
+import com.github.pister.dbsync.runtime.aop.InterceptorResult;
 import com.github.pister.dbsync.config.mapping.RichTableConfig;
 import com.github.pister.dbsync.config.mapping.TableTaskConfig;
 import com.github.pister.dbsync.config.mapping.table.MappedTable;
-import com.github.pister.dbsync.id.Sequence;
-import com.github.pister.dbsync.rt.ResultRow;
-import com.github.pister.dbsync.rt.Row;
-import com.github.pister.dbsync.sync.DestProcessor;
-import com.github.pister.dbsync.util.CollectionUtil;
-import com.github.pister.dbsync.util.MySqlUtil;
-import com.github.pister.dbsync.util.assist.Transformer;
+import com.github.pister.dbsync.common.db.seq.Sequence;
+import com.github.pister.dbsync.runtime.exec.ResultRow;
+import com.github.pister.dbsync.runtime.exec.Row;
+import com.github.pister.dbsync.runtime.sync.DestProcessor;
+import com.github.pister.dbsync.common.tools.util.CollectionUtil;
+import com.github.pister.dbsync.common.tools.util.MySqlUtil;
+import com.github.pister.dbsync.common.tools.util.assist.Transformer;
 import com.github.pister.dbsync.config.mapping.MappedTableUtils;
-import com.github.pister.dbsync.rt.FieldValue;
+import com.github.pister.dbsync.runtime.exec.FieldValue;
 import junit.framework.TestCase;
 
 import java.sql.SQLException;
@@ -29,44 +32,44 @@ import java.util.List;
 public class TransferTest extends TestCase {
 
 
-    private TransferServer initTransferServer() throws SQLException {
-        DefaultTransferServer defaultTransferServer = new DefaultTransferServer();
-        defaultTransferServer.addDbConfig(MySqlUtil.makeDbConfig("127.0.0.1:3306/sample", "root", "123456"));
-        // defaultTransferServer.addDbConfig(MySqlUtil.makeDbConfig("127.0.0.1:3306/sample_other_source", "root", "123456"));
+    private DbSyncServer initTransferServer() throws SQLException {
+        DefaultDbSyncServer defaultTransferServer = new DefaultDbSyncServer();
+        defaultTransferServer.registerDbConfig(0, MySqlUtil.makeDbConfig("127.0.0.1:3306/sample", "root", "123456"));
+        // defaultTransferServer.registerDbConfig(1, MySqlUtil.makeDbConfig("127.0.0.1:3306/sample_other_source", "root", "123456"));
         defaultTransferServer.init();
         return defaultTransferServer;
 
     }
 
     public void testInitTransferServer() throws SQLException {
-        TransferServer transferServer = initTransferServer();
-        System.out.println(transferServer.dbNameList());
-        System.out.println(transferServer.tableNameList(1));
+        DbSyncServer dbSyncServer = initTransferServer();
+        System.out.println(dbSyncServer.dbNameList());
+        System.out.println(dbSyncServer.tableNameList(1));
     }
 
     public void testTransferSingleTable() throws Exception {
-        TransferServer transferServer = initTransferServer();
-        TableTransferClient tableTransferClient = new TableTransferClient();
-        tableTransferClient.setTransferServer(transferServer);
-        tableTransferClient.addLocalDb(MySqlUtil.makeDbConfig("127.0.0.1:3306/sample2", "root", "123456"));
-        //  tableTransferClient.addLocalDb(MySqlUtil.makeDbConfig("test112.benshouyin.net/trans_test_01", "trans_test_user", "trans_test_pwd"));
-        tableTransferClient.addTableTaskConfig(TableTaskConfig.makeSingle("my_sample_task", 0, "sample_pen", 0, "sample_pen")
-                );
-        tableTransferClient.init();
-        tableTransferClient.syncTable("my_sample_task");
+        DbSyncServer dbSyncServer = initTransferServer();
+        DbSyncClient dbSyncClient = new DbSyncClient();
+        dbSyncClient.setDbSyncServer(dbSyncServer);
+        dbSyncClient.registerLocalDb(0, MySqlUtil.makeDbConfig("127.0.0.1:3306/sample2", "root", "123456"));
+        //  dbSyncClient.addLocalDb(MySqlUtil.makeDbConfig("test112.benshouyin.net/trans_test_01", "trans_test_user", "trans_test_pwd"));
+        dbSyncClient.addTableTaskConfig(TableTaskConfig.makeSingle("my_sample_task", 0, "sample_pen", 0, "sample_pen"));
+
+        dbSyncClient.init();
+        dbSyncClient.exec("my_sample_task");
     }
     /*
 
 
     public void testTransferShardsTable() throws Exception {
-        TransferServer transferServer = initTransferServer();
-        TableTransferClient tableTransferClient = new TableTransferClient();
-        tableTransferClient.setTransferServer(transferServer);
+        DbSyncServer transferServer = initTransferServer();
+        DbSyncClient tableTransferClient = new DbSyncClient();
+        tableTransferClient.setDbSyncServer(transferServer);
         tableTransferClient.addLocalDb(MySqlUtil.makeDbConfig("test112.benshouyin.net/trans_test_00", "trans_test_user", "trans_test_pwd"));
         tableTransferClient.addLocalDb(MySqlUtil.makeDbConfig("test112.benshouyin.net/trans_test_01", "trans_test_user", "trans_test_pwd"));
         tableTransferClient.addTableTaskConfig(TableTaskConfig.makeOneTooManyShard("sports", 0, "qserver_sport", "trans_test_sport_%04d", "user_id", 2, 4));
         tableTransferClient.init();
-        tableTransferClient.syncTable("sports");
+        tableTransferClient.exec("sports");
     }
 */
 
@@ -109,7 +112,7 @@ public class TransferTest extends TestCase {
                 @Override
                 public Row transform(ResultRow inputResult) {
                     Row input = inputResult.getRow();
-                    System.out.println("after get:"  + input.getAttachment());
+                    System.out.println("after get:" + input.getAttachment());
 
                     long id = sequence.nextValue();
                     Row row = new Row();
@@ -144,12 +147,12 @@ public class TransferTest extends TestCase {
     };
 
     public void testMysqlTransfer() throws Exception {
-        SimpleMysqlTransfer mysqlTransfer = new SimpleMysqlTransfer();
-        mysqlTransfer.addSourceDbConfig(MySqlUtil.makeDbConfig("test112.benshouyin.net/qserver", "qserver_user", "qserver_pwd"));
-        mysqlTransfer.addSourceDbConfig(MySqlUtil.makeDbConfig("test112.benshouyin.net/qserver", "qserver_user", "qserver_pwd"));
+        DbSyncManager mysqlTransfer = new DbSyncManager();
+        mysqlTransfer.registerSourceDbConfig(0, MySqlUtil.makeDbConfig("test112.benshouyin.net/qserver", "qserver_user", "qserver_pwd"));
+        mysqlTransfer.registerSourceDbConfig(1, MySqlUtil.makeDbConfig("test112.benshouyin.net/qserver", "qserver_user", "qserver_pwd"));
 
-        mysqlTransfer.addDestDbConfig(MySqlUtil.makeDbConfig("test112.benshouyin.net/trans_test_00", "trans_test_user", "trans_test_pwd"));
-        mysqlTransfer.addDestDbConfig(MySqlUtil.makeDbConfig("test112.benshouyin.net/trans_test_01", "trans_test_user", "trans_test_pwd"));
+        mysqlTransfer.registerDestDbConfig(0, MySqlUtil.makeDbConfig("test112.benshouyin.net/trans_test_00", "trans_test_user", "trans_test_pwd"));
+        mysqlTransfer.registerDestDbConfig(1, MySqlUtil.makeDbConfig("test112.benshouyin.net/trans_test_01", "trans_test_user", "trans_test_pwd"));
 
         // 1 => 1
         mysqlTransfer.addTask(TableTaskConfig.makeSingle("user-table3", 0, "qserver_user", 0, "trans_test_user")
@@ -158,7 +161,7 @@ public class TransferTest extends TestCase {
                 .sourceExtCondition("deleted = 0"));
 
         // 1 => N
-    //    mysqlTransfer.addTask(TableTaskConfig.makeOneTooManyShard("sportsc", 0, "qserver_sport", "trans_test_sport_%04d", "user_id", 2, 4).batchInterceptor(myBatchInterceptor));
+        //    mysqlTransfer.addTask(TableTaskConfig.makeOneTooManyShard("sportsc", 0, "qserver_sport", "trans_test_sport_%04d", "user_id", 2, 4).batchInterceptor(myBatchInterceptor));
 
         mysqlTransfer.setDestSeqDbIndex(0);
 

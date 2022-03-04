@@ -1,8 +1,8 @@
 package com.github.pister.dbsync.config.mapping.table;
 
-import com.github.pister.dbsync.TransferServer;
+import com.github.pister.dbsync.endpoint.server.DbSyncServer;
 import com.github.pister.dbsync.config.Column;
-import com.github.pister.dbsync.scan.MagicDb;
+import com.github.pister.dbsync.common.db.MagicDb;
 import com.github.pister.dbsync.config.Columns;
 import com.github.pister.dbsync.config.DbConfig;
 import com.github.pister.dbsync.config.TableConfig;
@@ -29,15 +29,18 @@ public class SingleMappedTable extends MappedTable {
     }
 
     @Override
-    public void check(TransferServer transferServer, MagicDb magicDb, List<DbConfig> dbConfigList) throws SQLException {
+    public void check(DbSyncServer dbSyncServer, MagicDb magicDb, Map<Integer, DbConfig> dbConfigList) throws SQLException {
         log.warn("checking " + getLocalTable() + " ...");
         if (dbConfigList.isEmpty()) {
             throw new RuntimeException("dbConfigList can not be empty!");
         }
         DbConfig dbConfig = dbConfigList.get(dbIndex);
+        if (dbConfig == null) {
+            throw new RuntimeException("db not exist by index:" + dbIndex);
+        }
         TableConfig tableConfig = getTableConfig(dbConfig, getLocalTable());
         Columns localColumns = magicDb.getColumns(tableConfig);
-        Columns remoteColumns = transferServer.getColumns(getRemoteDbIndex(), getRemoteTable());
+        Columns remoteColumns = dbSyncServer.getColumns(getRemoteDbIndex(), getRemoteTable());
 
         Map<String, Column> remoteColumnsMap = new HashMap<>();
         for (Column remoteColumn : remoteColumns.getColumns()) {

@@ -1,8 +1,8 @@
 package com.github.pister.dbsync.config;
 
 
-import com.github.pister.dbsync.util.CollectionUtil;
-import com.github.pister.dbsync.util.StringUtil;
+import com.github.pister.dbsync.common.tools.util.CollectionUtil;
+import com.github.pister.dbsync.common.tools.util.StringUtil;
 
 import java.io.Serializable;
 import java.util.List;
