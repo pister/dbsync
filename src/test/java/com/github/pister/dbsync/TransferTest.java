@@ -31,7 +31,7 @@ public class TransferTest extends TestCase {
 
     private TransferServer initTransferServer() throws SQLException {
         DefaultTransferServer defaultTransferServer = new DefaultTransferServer();
-        defaultTransferServer.addDbConfig(MySqlUtil.makeDbConfig("127.0.0.1:3306/sample", "root", "513513"));
+        defaultTransferServer.addDbConfig(MySqlUtil.makeDbConfig("127.0.0.1:3306/sample", "root", "123456"));
         // defaultTransferServer.addDbConfig(MySqlUtil.makeDbConfig("127.0.0.1:3306/sample_other_source", "root", "123456"));
         defaultTransferServer.init();
         return defaultTransferServer;
@@ -48,7 +48,7 @@ public class TransferTest extends TestCase {
         TransferServer transferServer = initTransferServer();
         TableTransferClient tableTransferClient = new TableTransferClient();
         tableTransferClient.setTransferServer(transferServer);
-        tableTransferClient.addLocalDb(MySqlUtil.makeDbConfig("127.0.0.1:3306/sample2", "root", "513513"));
+        tableTransferClient.addLocalDb(MySqlUtil.makeDbConfig("127.0.0.1:3306/sample2", "root", "123456"));
         //  tableTransferClient.addLocalDb(MySqlUtil.makeDbConfig("test112.benshouyin.net/trans_test_01", "trans_test_user", "trans_test_pwd"));
         tableTransferClient.addTableTaskConfig(TableTaskConfig.makeSingle("my_sample_task", 0, "sample_pen", 0, "sample_pen")
                 );
