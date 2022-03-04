@@ -2,6 +2,7 @@ package com.github.pister.dbsync.endpoint.server;
 
 import com.github.pister.dbsync.common.db.DbPool;
 import com.github.pister.dbsync.common.db.MagicDb;
+import com.github.pister.dbsync.common.tools.util.MySqlUtil;
 import com.github.pister.dbsync.runtime.scan.Scanner;
 import com.github.pister.dbsync.common.tools.util.CollectionUtil;
 import com.github.pister.dbsync.endpoint.base.AbstractPoint;
@@ -125,15 +126,27 @@ public class DefaultDbSyncServer extends AbstractPoint implements DbSyncServer {
      * 后面用的时候采用索引获取，
      * 注册同一索引会覆盖之前的配置
      *
-     * @param index
+     * @param dbIndex
      * @param dbConfig
      */
-    public void registerDbConfig(int index, DbConfig dbConfig) {
+    public void registerDbConfig(int dbIndex, DbConfig dbConfig) {
         if (hasInited.get()) {
             throw new IllegalStateException("can not register after inited");
         }
-        dbConfigMap.put(index, dbConfig);
+        dbConfigMap.put(dbIndex, dbConfig);
     }
 
+    /**
+     * 通过索引注册数据库相关配置，
+     * 后面用的时候采用索引获取，
+     * 注册同一索引会覆盖之前的配置
+     * @param dbIndex
+     * @param shortUrl hostname[:port]/db_name
+     * @param username
+     * @param password
+     */
+    public void registerDbConfig(int dbIndex, String shortUrl, String username, String password) {
+        registerDbConfig(dbIndex, MySqlUtil.makeDbConfig(shortUrl, username, password));
+    }
 
 }

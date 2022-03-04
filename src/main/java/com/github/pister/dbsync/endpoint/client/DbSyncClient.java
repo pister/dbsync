@@ -1,5 +1,6 @@
 package com.github.pister.dbsync.endpoint.client;
 
+import com.github.pister.dbsync.common.tools.util.MySqlUtil;
 import com.github.pister.dbsync.config.mapping.table.MappedTable;
 import com.github.pister.dbsync.common.db.DbPool;
 import com.github.pister.dbsync.common.db.seq.LocalSequence;
@@ -69,6 +70,19 @@ public class DbSyncClient extends AbstractPoint {
             throw new IllegalStateException("can not register after inited");
         }
         localDbConfigs.put(index, dbConfig);
+    }
+
+    /**
+     * 通过索引注册数据库相关配置，
+     * 后面用的时候采用索引获取，
+     * 注册同一索引会覆盖之前的配置
+     * @param dbIndex
+     * @param shortUrl hostname[:port]/db_name
+     * @param username
+     * @param password
+     */
+    public void registerLocalDb(int dbIndex, String shortUrl, String username, String password) {
+        registerLocalDb(dbIndex, MySqlUtil.makeDbConfig(shortUrl, username, password));
     }
 
     public void setSequenceDbIndex(int dbIndex) {

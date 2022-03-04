@@ -1,5 +1,6 @@
 package com.github.pister.dbsync.endpoint.remoting.server;
 
+import com.github.pister.dbsync.common.Constants;
 import com.github.pister.dbsync.endpoint.server.DefaultDbSyncServer;
 import com.github.pister.dbsync.endpoint.remoting.Request;
 import com.github.pister.dbsync.endpoint.remoting.Response;
@@ -63,7 +64,7 @@ public class ServiceExporter {
             defaultTransferServer.setTableUpdatedFieldField(0, "sequences", "last_modified");
             defaultTransferServer.init();
 
-            registerService("transferServer", defaultTransferServer);
+            registerService(Constants.DB_SYNC_SERVICE_NAME, defaultTransferServer);
         } catch (Exception e) {
             log.error("init error", e);
             throw new RuntimeException(e);

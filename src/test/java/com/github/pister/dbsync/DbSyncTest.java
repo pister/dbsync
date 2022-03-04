@@ -29,12 +29,11 @@ import java.util.List;
 /**
  * Created by songlihuang on 2021/2/18.
  */
-public class TransferTest extends TestCase {
-
+public class DbSyncTest extends TestCase {
 
     private DbSyncServer initTransferServer() throws SQLException {
         DefaultDbSyncServer defaultTransferServer = new DefaultDbSyncServer();
-        defaultTransferServer.registerDbConfig(0, MySqlUtil.makeDbConfig("127.0.0.1:3306/sample", "root", "123456"));
+        defaultTransferServer.registerDbConfig(0, "127.0.0.1:3306/sample", "root", "123456");
         // defaultTransferServer.registerDbConfig(1, MySqlUtil.makeDbConfig("127.0.0.1:3306/sample_other_source", "root", "123456"));
         defaultTransferServer.init();
         return defaultTransferServer;
@@ -51,11 +50,12 @@ public class TransferTest extends TestCase {
         DbSyncServer dbSyncServer = initTransferServer();
         DbSyncClient dbSyncClient = new DbSyncClient();
         dbSyncClient.setDbSyncServer(dbSyncServer);
-        dbSyncClient.registerLocalDb(0, MySqlUtil.makeDbConfig("127.0.0.1:3306/sample2", "root", "123456"));
+        dbSyncClient.registerLocalDb(0, "127.0.0.1:3306/sample2", "root", "123456");
         //  dbSyncClient.addLocalDb(MySqlUtil.makeDbConfig("test112.benshouyin.net/trans_test_01", "trans_test_user", "trans_test_pwd"));
         dbSyncClient.addTableTaskConfig(TableTaskConfig.makeSingle("my_sample_task", 0, "sample_pen", 0, "sample_pen"));
 
         dbSyncClient.init();
+
         dbSyncClient.exec("my_sample_task");
     }
     /*
