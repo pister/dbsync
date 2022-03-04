@@ -5,17 +5,14 @@ import com.github.pister.dbsync.common.db.DbPool;
 import com.github.pister.dbsync.common.db.seq.LocalSequence;
 import com.github.pister.dbsync.common.db.MagicDb;
 import com.github.pister.dbsync.endpoint.server.DbSyncServer;
-import com.github.pister.dbsync.runtime.sync.ProcessListener;
+import com.github.pister.dbsync.runtime.sync.*;
 import com.github.pister.dbsync.common.tools.util.CollectionUtil;
 import com.github.pister.dbsync.endpoint.base.AbstractPoint;
-import com.github.pister.dbsync.runtime.sync.Saver;
 import com.github.pister.dbsync.config.DbConfig;
 import com.github.pister.dbsync.config.mapping.MappedTableUtils;
 import com.github.pister.dbsync.config.mapping.TableTaskConfig;
 import com.github.pister.dbsync.runtime.progress.FileProgressManager;
 import com.github.pister.dbsync.runtime.progress.ProgressManager;
-import com.github.pister.dbsync.runtime.sync.MappedDestProcessor;
-import com.github.pister.dbsync.runtime.sync.TableSyncProcessor;
 import com.github.pister.dbsync.common.tools.util.MapUtil;
 
 import javax.sql.DataSource;
@@ -53,19 +50,7 @@ public class DbSyncClient extends AbstractPoint {
     private boolean ignoreCheck = false;
 
 
-    private static final ProcessListener EMPTY_PROCESS_LISTENER = new ProcessListener() {
-
-        @Override
-        public void onProcess(String taskName, int rows) {
-
-        }
-
-        @Override
-        public void onFinish(String taskName) {
-
-        }
-    };
-
+    private static final ProcessListener EMPTY_PROCESS_LISTENER = new NopProcessListener();
 
     public void addTableTaskConfig(TableTaskConfig tableTaskConfig) {
         tableTaskConfigList.add(tableTaskConfig);
@@ -80,6 +65,9 @@ public class DbSyncClient extends AbstractPoint {
      * @param dbConfig
      */
     public void registerLocalDb(int index, DbConfig dbConfig) {
+        if (hasInited.get()) {
+            throw new IllegalStateException("can not register after inited");
+        }
         localDbConfigs.put(index, dbConfig);
     }
 
@@ -98,6 +86,9 @@ public class DbSyncClient extends AbstractPoint {
     }
 
     public void init() throws Exception {
+        if (!hasInited.compareAndSet(false, true)) {
+            throw new RuntimeException("has already inited");
+        }
         DbPool dbPool = new DbPool();
         magicDb = new MagicDb(dbPool);
         saver = new Saver(dbPool);

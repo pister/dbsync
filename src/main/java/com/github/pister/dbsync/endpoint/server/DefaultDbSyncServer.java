@@ -41,6 +41,9 @@ public class DefaultDbSyncServer extends AbstractPoint implements DbSyncServer {
     private Map<DbTable, TableConfig> namedTableConfig;
 
     public void init() throws SQLException {
+        if (!hasInited.compareAndSet(false, true)) {
+            throw new RuntimeException("has already inited");
+        }
         dbPool = new DbPool();
         magicDb = new MagicDb(dbPool);
         scanner = new Scanner(magicDb);
@@ -126,6 +129,9 @@ public class DefaultDbSyncServer extends AbstractPoint implements DbSyncServer {
      * @param dbConfig
      */
     public void registerDbConfig(int index, DbConfig dbConfig) {
+        if (hasInited.get()) {
+            throw new IllegalStateException("can not register after inited");
+        }
         dbConfigMap.put(index, dbConfig);
     }
 

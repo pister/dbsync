@@ -7,6 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Created by songlihuang on 2017/7/13.
@@ -17,6 +18,14 @@ public abstract class AbstractPoint {
 
     protected Map<DbTable, String> lastModifiedFieldMap = MapUtil.newHashMap();
 
+    protected final AtomicBoolean hasInited = new AtomicBoolean(false);
+
+    /**
+     * 设置更新时间的字段
+     * @param dbIndex
+     * @param tableName
+     * @param lastModifiedField
+     */
     public void setTableUpdatedFieldField(int dbIndex, String tableName, String lastModifiedField) {
         lastModifiedFieldMap.put(new DbTable(dbIndex, tableName), lastModifiedField);
     }
