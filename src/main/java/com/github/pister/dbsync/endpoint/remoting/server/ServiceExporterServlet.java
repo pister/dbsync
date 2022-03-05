@@ -40,7 +40,7 @@ public class ServiceExporterServlet extends HttpServlet {
         if (StringUtil.isEmpty(databases)) {
             throw new RuntimeException("no transfer databases config, please check init parameters: xdata.databases.transfer.config in web.xml");
         }
-        serviceExporter.setDatabases(databases);
+        // TODO init config
         serviceExporter.init();
     }
 

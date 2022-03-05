@@ -1,6 +1,7 @@
 package com.github.pister.dbsync.endpoint.remoting.client;
 
 import com.github.pister.dbsync.common.tools.http.HttpClient;
+import com.github.pister.dbsync.endpoint.auth.AuthUtil;
 import com.github.pister.dbsync.endpoint.remoting.Response;
 import com.github.pister.dbsync.endpoint.remoting.AuthToken;
 import com.github.pister.dbsync.endpoint.remoting.Request;
@@ -15,7 +16,9 @@ public class DefaultHttpInvoker implements Invoker {
 
     private String remotingUrl;
 
-    private String authToken = AuthToken.VALUE;
+    private String appId;
+
+    private String appSecret;
 
     public void init(HttpClient httpClient) {
         HttpClientProtocolInvoker httpClientProtocolInvoker = new HttpClientProtocolInvoker(httpClient);
@@ -31,7 +34,9 @@ public class DefaultHttpInvoker implements Invoker {
     @Override
     public Response invoke(Request request) {
         try {
-            request.setAuthToken(authToken);
+            request.setAppId(appId);
+            String token = AuthUtil.makeAuthToken(request, appSecret);
+            request.setToken(token);
             byte[] requestBytes = HessianSerializeUtil.toBytes(request);
             byte[] responseBytes = protocolInvoker.invoke(requestBytes);
             return (Response) HessianSerializeUtil.toObject(responseBytes);
@@ -44,5 +49,11 @@ public class DefaultHttpInvoker implements Invoker {
         this.remotingUrl = remotingUrl;
     }
 
+    public void setAppId(String appId) {
+        this.appId = appId;
+    }
 
+    public void setAppSecret(String appSecret) {
+        this.appSecret = appSecret;
+    }
 }

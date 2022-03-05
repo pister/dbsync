@@ -26,7 +26,7 @@ public abstract class AbstractPoint {
      * @param tableName
      * @param lastModifiedField
      */
-    public void setTableUpdatedFieldField(int dbIndex, String tableName, String lastModifiedField) {
+    public void setTableLastModifiedField(int dbIndex, String tableName, String lastModifiedField) {
         lastModifiedFieldMap.put(new DbTable(dbIndex, tableName), lastModifiedField);
     }
 

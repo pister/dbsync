@@ -1,13 +1,14 @@
 package com.github.pister.dbsync.endpoint.remoting.server;
 
 import com.github.pister.dbsync.common.Constants;
-import com.github.pister.dbsync.endpoint.server.DefaultDbSyncServer;
+import com.github.pister.dbsync.common.tools.util.MapUtil;
+import com.github.pister.dbsync.common.tools.util.StringUtil;
+import com.github.pister.dbsync.endpoint.auth.AppSecretProvider;
+import com.github.pister.dbsync.endpoint.auth.AuthUtil;
+import com.github.pister.dbsync.endpoint.remoting.AuthToken;
 import com.github.pister.dbsync.endpoint.remoting.Request;
 import com.github.pister.dbsync.endpoint.remoting.Response;
-import com.github.pister.dbsync.common.tools.util.StringUtil;
-import com.github.pister.dbsync.config.DbConfig;
-import com.github.pister.dbsync.endpoint.remoting.AuthToken;
-import com.github.pister.dbsync.common.tools.util.MapUtil;
+import com.github.pister.dbsync.endpoint.server.DefaultDbSyncServer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -15,7 +16,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -25,56 +25,65 @@ public class ServiceExporter {
 
     private static final Logger log = LoggerFactory.getLogger(ServiceExporter.class);
 
+    private DefaultDbSyncServer dbSyncServer = new DefaultDbSyncServer();
+
     private Map<String, Object> namedServices = MapUtil.newHashMap();
 
-    /**
-     * format:  hostname1:dbname1, hostname2:dbname2, ...
-     */
-    private String databases;
+    private AppSecretProvider appSecretProvider;
 
     private void registerService(String serviceName, Object service) {
         namedServices.put(serviceName, service);
     }
 
-    private DbConfig makeDbConfig(String hostname, String dbName) {
-        DbConfig dbConfig = new DbConfig();
-        dbConfig.setDbName(dbName);
-        dbConfig.setUsername("xdata_user");
-        dbConfig.setPassword("xdata_pwd");
-        dbConfig.setUrl("jdbc:mysql://" + hostname + ":3306/" + dbName + "?useUnicode=true&amp;characterEncoding=utf8&amp;zeroDateTimeBehavior=convertToNull&amp;transformedBitIsBoolean=true");
-        return dbConfig;
+    /**
+     * 注册数据库配置
+     * @param dbIndex
+     * @param shortUrl
+     * @param username
+     * @param password
+     */
+    public void registerDbConfig(int dbIndex, String shortUrl, String username, String password) {
+        dbSyncServer.registerDbConfig(dbIndex, shortUrl, username, password);
     }
 
+    /**
+     * 设置最后修改时间字段
+     * @param dbIndex
+     * @param tableName
+     * @param lastModifiedField
+     */
+    public void setTableLastModifiedField(int dbIndex, String tableName, String lastModifiedField) {
+        dbSyncServer.setTableLastModifiedField(dbIndex, tableName, lastModifiedField);
+    }
 
     public void init() {
         try {
-            DefaultDbSyncServer defaultTransferServer = new DefaultDbSyncServer();
-
-            List<String> dbList = StringUtil.splitTrim(databases, ",");
-            int index = 0;
-            for (String dbPair : dbList) {
-                String[] parts = dbPair.split(":");
-                defaultTransferServer.registerDbConfig(index, makeDbConfig(parts[0], parts[1]));
-                index++;
-            }
-
-            //  defaultTransferServer.registerDbConfig(makeDbConfig("127.0.0.1", "xdata_00"))
-            //  defaultTransferServer.registerDbConfig(makeDbConfig("127.0.0.1", "xdata_01"));
-
-            defaultTransferServer.setTableUpdatedFieldField(0, "sequences", "last_modified");
-            defaultTransferServer.init();
-
-            registerService(Constants.DB_SYNC_SERVICE_NAME, defaultTransferServer);
+            dbSyncServer.init();
+            registerService(Constants.DB_SYNC_SERVICE_NAME, dbSyncServer);
         } catch (Exception e) {
             log.error("init error", e);
             throw new RuntimeException(e);
         }
     }
 
+    private Response checkForAuth(Request request) {
+        String appId = request.getAppId();
+        if (StringUtil.isEmpty(appId)) {
+            return createThrowableResponse(new Exception("miss appId"));
+        }
+        String appSecret = appSecretProvider.getAppSecret(request.getAppId());
+        String tokenByRequest = request.getToken();
+        String tokenByGen = AuthUtil.makeAuthToken(request, appSecret);
+        if (!StringUtil.equals(tokenByRequest, tokenByGen)) {
+            return createThrowableResponse(new Exception("token not match"));
+        }
+        return null;
+    }
+
     public Response invoke(Request request) {
-        String authToken = request.getAuthToken();
-        if (!StringUtil.equals(AuthToken.VALUE, authToken)) {
-            return createThrowableResponse(new Exception("bad auth token error"));
+        Response resp = checkForAuth(request);
+        if (resp != null) {
+            return resp;
         }
         Object service = namedServices.get(request.getServiceName());
         if (service == null) {
@@ -106,7 +115,4 @@ public class ServiceExporter {
         return response;
     }
 
-    public void setDatabases(String databases) {
-        this.databases = databases;
-    }
 }

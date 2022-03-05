@@ -7,7 +7,9 @@ import java.io.Serializable;
  */
 public class Request implements Serializable {
 
-    private String authToken;
+    private String appId;
+
+    private String token;
 
     private String serviceName;
 
@@ -15,12 +17,12 @@ public class Request implements Serializable {
 
     private Object[] args;
 
-    public String getAuthToken() {
-        return authToken;
+    public String getAppId() {
+        return appId;
     }
 
-    public void setAuthToken(String authToken) {
-        this.authToken = authToken;
+    public void setAppId(String appId) {
+        this.appId = appId;
     }
 
     public String getServiceName() {
@@ -45,5 +47,13 @@ public class Request implements Serializable {
 
     public void setArgs(Object[] args) {
         this.args = args;
+    }
+
+    public String getToken() {
+        return token;
+    }
+
+    public void setToken(String token) {
+        this.token = token;
     }
 }
