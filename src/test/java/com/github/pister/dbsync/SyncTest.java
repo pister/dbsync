@@ -53,6 +53,7 @@ public class SyncTest extends TestCase {
         syncClient.setSyncServer(syncServer);
         syncClient.registerLocalDb(0, "127.0.0.1:3306/sample2", "root", "123456");
         //  syncClient.addLocalDb(MySqlUtil.makeDbConfig("test112.benshouyin.net/trans_test_01", "trans_test_user", "trans_test_pwd"));
+
         syncClient.addTableTaskConfig(TableTaskConfig.makeSingle("my_sample_task", 0, "sample_pen", 0, "sample_pen"));
 
         syncClient.init();
