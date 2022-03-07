@@ -24,9 +24,9 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * <p>
  * Created by songlihuang on 2021/2/19.
  */
-public class DbSyncManager {
+public class SyncManager {
 
-    private static final Logger log = LoggerFactory.getLogger(DbSyncManager.class);
+    private static final Logger log = LoggerFactory.getLogger(SyncManager.class);
 
     private DefaultSyncServer dbSyncServer = new DefaultSyncServer();
 

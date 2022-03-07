@@ -149,29 +149,29 @@ public class SyncTest extends TestCase {
     };
 
     public void testMysqlTransfer() throws Exception {
-        DbSyncManager mysqlTransfer = new DbSyncManager();
-        mysqlTransfer.registerSourceDbConfig(0, MySqlUtil.makeDbConfig("test112.benshouyin.net/qserver", "qserver_user", "qserver_pwd"));
-        mysqlTransfer.registerSourceDbConfig(1, MySqlUtil.makeDbConfig("test112.benshouyin.net/qserver", "qserver_user", "qserver_pwd"));
+        SyncManager syncManager = new SyncManager();
+        syncManager.registerSourceDbConfig(0, MySqlUtil.makeDbConfig("test112.benshouyin.net/qserver", "qserver_user", "qserver_pwd"));
+        syncManager.registerSourceDbConfig(1, MySqlUtil.makeDbConfig("test112.benshouyin.net/qserver", "qserver_user", "qserver_pwd"));
 
-        mysqlTransfer.registerDestDbConfig(0, MySqlUtil.makeDbConfig("test112.benshouyin.net/trans_test_00", "trans_test_user", "trans_test_pwd"));
-        mysqlTransfer.registerDestDbConfig(1, MySqlUtil.makeDbConfig("test112.benshouyin.net/trans_test_01", "trans_test_user", "trans_test_pwd"));
+        syncManager.registerDestDbConfig(0, MySqlUtil.makeDbConfig("test112.benshouyin.net/trans_test_00", "trans_test_user", "trans_test_pwd"));
+        syncManager.registerDestDbConfig(1, MySqlUtil.makeDbConfig("test112.benshouyin.net/trans_test_01", "trans_test_user", "trans_test_pwd"));
 
         // 1 => 1
-        mysqlTransfer.addTask(TableTaskConfig.makeSingle("user-table3", 0, "qserver_user", 0, "trans_test_user")
+        syncManager.addTask(TableTaskConfig.makeSingle("user-table3", 0, "qserver_user", 0, "trans_test_user")
                 .mappingColumn("nickname2", "nickname")
                 .onlyFullDump(true)
                 .sourceExtCondition("deleted = 0"));
 
         // 1 => N
-        //    mysqlTransfer.addTask(TableTaskConfig.makeOneTooManyShard("sportsc", 0, "qserver_sport", "trans_test_sport_%04d", "user_id", 2, 4).batchInterceptor(myBatchInterceptor));
+        //    syncManager.addTask(TableTaskConfig.makeOneTooManyShard("sportsc", 0, "qserver_sport", "trans_test_sport_%04d", "user_id", 2, 4).batchInterceptor(myBatchInterceptor));
 
-        mysqlTransfer.setDestSeqDbIndex(0);
+        syncManager.setDestSeqDbIndex(0);
 
-        mysqlTransfer.setIgnoreCheck(true);
-        mysqlTransfer.init();
+        syncManager.setIgnoreCheck(true);
+        syncManager.init();
 
-        mysqlTransfer.runOnce();
-        //mysqlTransfer.runInterval(10);
+        syncManager.runOnce();
+        //syncManager.runInterval(10);
 
         Thread.sleep(10 * 60 * 1000);
     }

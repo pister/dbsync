@@ -129,6 +129,34 @@ syncClient.setIgnoreCheck(...)
 syncClient.addTableTaskConfig(tableTaskConfig);
 
 
-
 ```
 
+## 使用SyncManager来执行迁移
+
+SyncManager对迁移任务做了一个简单的封装
+
+```
+SyncManager syncManager = new SyncManager();
+syncManager.registerSourceDbConfig(...);
+syncManager.registerSourceDbConfig(...);
+
+syncManager.registerDestDbConfig(...);
+syncManager.registerDestDbConfig(...);
+
+// 一对一迁移
+syncManager.addTask(TableTaskConfig.makeSingle("my_task1", 0, "qserver_user", 0, "trans_test_user")
+        // 字段名修改
+        .mappingColumn("nickname2", "nickname")
+        // 只支持全量
+        .onlyFullDump(true)
+        // 额外条件
+        .sourceExtCondition("deleted = 0"));
+
+// 一对多迁移
+syncManager.addTask(TableTaskConfig.makeOneTooManyShard(
+       "my_task2", 0, "table_1", "dest_table_%04d", "user_id", 2, 4).batchInterceptor(myBatchInterceptor));
+
+syncManager.init();
+
+syncManager.runOnce();
+```
