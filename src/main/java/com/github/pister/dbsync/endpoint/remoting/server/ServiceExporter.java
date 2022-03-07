@@ -5,10 +5,10 @@ import com.github.pister.dbsync.common.tools.util.MapUtil;
 import com.github.pister.dbsync.common.tools.util.StringUtil;
 import com.github.pister.dbsync.endpoint.auth.AppSecretProvider;
 import com.github.pister.dbsync.endpoint.auth.AuthUtil;
-import com.github.pister.dbsync.endpoint.remoting.AuthToken;
+import com.github.pister.dbsync.endpoint.auth.MapAppSecretProvider;
 import com.github.pister.dbsync.endpoint.remoting.Request;
 import com.github.pister.dbsync.endpoint.remoting.Response;
-import com.github.pister.dbsync.endpoint.server.DefaultDbSyncServer;
+import com.github.pister.dbsync.endpoint.server.DefaultSyncServer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -25,11 +25,22 @@ public class ServiceExporter {
 
     private static final Logger log = LoggerFactory.getLogger(ServiceExporter.class);
 
-    private DefaultDbSyncServer dbSyncServer = new DefaultDbSyncServer();
+    private Map<String, Method> methodsMap = MapUtil.newConcurrentHashMap();
+
+    private DefaultSyncServer dbSyncServer = new DefaultSyncServer();
 
     private Map<String, Object> namedServices = MapUtil.newHashMap();
 
     private AppSecretProvider appSecretProvider;
+
+    public ServiceExporter(AppSecretProvider appSecretProvider) {
+        this.appSecretProvider = appSecretProvider;
+    }
+
+    public ServiceExporter(Map<String, String> appSecretMap) {
+        this(new MapAppSecretProvider(appSecretMap));
+    }
+
 
     private void registerService(String serviceName, Object service) {
         namedServices.put(serviceName, service);
@@ -91,7 +102,7 @@ public class ServiceExporter {
         }
         try {
             // 这里没有判断方法重载
-            final Method method = service.getClass().getMethod(request.getMethodName());
+            final Method method = getMethod(service.getClass(), request.getMethodName());
             Object returnValue = AccessController.doPrivileged((PrivilegedAction<Object>) () -> {
                 try {
                     return method.invoke(service, request.getArgs());
@@ -107,6 +118,22 @@ public class ServiceExporter {
         } catch (NoSuchMethodException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    private Method getMethod(Class serviceClass, String methodName) throws NoSuchMethodException {
+        Method cachedMethod = methodsMap.get(methodName);
+        if (cachedMethod != null) {
+            return cachedMethod;
+        } else {
+            Method[] methods = serviceClass.getMethods();
+            for (Method m : methods) {
+                if (m.getName().equals(methodName)) {
+                    methodsMap.put(methodName, m);
+                    return m;
+                }
+            }
+        }
+        throw new NoSuchMethodException("not found method:" + methodName);
     }
 
     private Response createThrowableResponse(Throwable t) {

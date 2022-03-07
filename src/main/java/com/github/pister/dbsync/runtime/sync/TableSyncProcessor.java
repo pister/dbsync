@@ -1,6 +1,6 @@
 package com.github.pister.dbsync.runtime.sync;
 
-import com.github.pister.dbsync.endpoint.server.DbSyncServer;
+import com.github.pister.dbsync.endpoint.server.SyncServer;
 import com.github.pister.dbsync.runtime.aop.*;
 import com.github.pister.dbsync.config.mapping.table.MappedTable;
 import com.github.pister.dbsync.common.db.seq.LocalSequence;
@@ -28,7 +28,7 @@ public class TableSyncProcessor {
 
     private static final Logger log = LoggerFactory.getLogger(TableSyncProcessor.class);
 
-    private DbSyncServer dbSyncServer;
+    private SyncServer syncServer;
 
     private ProgressManager progressManager;
 
@@ -36,10 +36,10 @@ public class TableSyncProcessor {
 
     private Map<String, MappedTable> tables;
 
-    public TableSyncProcessor(DbSyncServer dbSyncServer,
+    public TableSyncProcessor(SyncServer syncServer,
                               DestProcessor destProcessor, ProgressManager progressManager,
                               Map<String, MappedTable> tables) {
-        this.dbSyncServer = dbSyncServer;
+        this.syncServer = syncServer;
         this.destProcessor = destProcessor;
         this.progressManager = progressManager;
         this.tables = tables;
@@ -94,14 +94,14 @@ public class TableSyncProcessor {
 
         BatchInterceptor batchInterceptor = mappedTable.getBatchInterceptor();
         Pagination pagination = tableProgress.getPagination();
-        AopContext aopContext = new DefaultAopContext(dbSyncServer.createQueryProcessor(), destProcessor, localSequence);
+        AopContext aopContext = new DefaultAopContext(destProcessor, localSequence);
         int rowCount = 0;
         RowInterceptorWrapper rowInterceptorWrapper = null;
         if (mappedTable.getRowInterceptor() != null) {
             rowInterceptorWrapper = new RowInterceptorWrapper(mappedTable.getRowInterceptor(), aopContext);
         }
         while (true) {
-            ScanPageResult scanPageResult = dbSyncServer.fetchForPage(tableProgress.getRemoteDbIndex(), tableProgress.getRemoteTable(), pagination, mappedTable.getSourceExtCondition());
+            ScanPageResult scanPageResult = syncServer.fetchForPage(tableProgress.getRemoteDbIndex(), tableProgress.getRemoteTable(), pagination, mappedTable.getSourceExtCondition());
             if (!scanPageResult.isSuccess()) {
                 log.error("error:" + scanPageResult.getMessage());
                 // 如果失败，1分钟后再试

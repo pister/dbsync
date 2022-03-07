@@ -25,9 +25,9 @@ import java.util.Map;
 /**
  * Created by songlihuang on 2017/7/11.
  */
-public class DefaultDbSyncServer extends AbstractPoint implements DbSyncServer {
+public class DefaultSyncServer extends AbstractPoint implements SyncServer {
 
-    private static final Logger log = LoggerFactory.getLogger(DefaultDbSyncServer.class);
+    private static final Logger log = LoggerFactory.getLogger(DefaultSyncServer.class);
 
     private Map<Integer, DbConfig> dbConfigMap = MapUtil.newHashMap();
 
@@ -64,7 +64,7 @@ public class DefaultDbSyncServer extends AbstractPoint implements DbSyncServer {
             tableConfigListMap.put(index, tableConfigList);
         }
 
-        log.warn("DefaultDbSyncServer init success.");
+        log.warn("DefaultSyncServer init success.");
     }
 
 
@@ -114,11 +114,6 @@ public class DefaultDbSyncServer extends AbstractPoint implements DbSyncServer {
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
-    }
-
-    @Override
-    public QueryProcessor createQueryProcessor() {
-        return new DbPoolQueryProcessor(dbPool, dbConfigMap);
     }
 
     /**

@@ -1,9 +1,8 @@
 package com.github.pister.dbsync.runtime.aop;
 
 import com.github.pister.dbsync.common.db.seq.LocalSequence;
-import com.github.pister.dbsync.runtime.sync.DestProcessor;
 import com.github.pister.dbsync.common.db.seq.Sequence;
-import com.github.pister.dbsync.runtime.sync.QueryProcessor;
+import com.github.pister.dbsync.runtime.sync.DestProcessor;
 
 /**
  * Created by songlihuang on 2021/2/19.
@@ -14,10 +13,7 @@ public class DefaultAopContext implements AopContext {
 
     private LocalSequence localSequence;
 
-    private QueryProcessor sourceQueryProcessor;
-
-    public DefaultAopContext(QueryProcessor sourceQueryProcessor, DestProcessor destProcessor, LocalSequence localSequence) {
-        this.sourceQueryProcessor = sourceQueryProcessor;
+    public DefaultAopContext(DestProcessor destProcessor, LocalSequence localSequence) {
         this.destProcessor = destProcessor;
         this.localSequence = localSequence;
     }
@@ -33,11 +29,6 @@ public class DefaultAopContext implements AopContext {
             throw new IllegalArgumentException("db sequence index is not set!");
         }
         return localSequence.getSequence(name);
-    }
-
-    @Override
-    public QueryProcessor getSourceQueryProcessor() {
-        return sourceQueryProcessor;
     }
 
 

@@ -1,6 +1,6 @@
 package com.github.pister.dbsync.config.mapping.table;
 
-import com.github.pister.dbsync.endpoint.server.DbSyncServer;
+import com.github.pister.dbsync.endpoint.server.SyncServer;
 import com.github.pister.dbsync.config.Column;
 import com.github.pister.dbsync.common.db.MagicDb;
 import com.github.pister.dbsync.config.Columns;
@@ -11,7 +11,6 @@ import org.slf4j.LoggerFactory;
 
 import java.sql.SQLException;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -29,7 +28,7 @@ public class SingleMappedTable extends MappedTable {
     }
 
     @Override
-    public void check(DbSyncServer dbSyncServer, MagicDb magicDb, Map<Integer, DbConfig> dbConfigList) throws SQLException {
+    public void check(SyncServer syncServer, MagicDb magicDb, Map<Integer, DbConfig> dbConfigList) throws SQLException {
         log.warn("checking " + getLocalTable() + " ...");
         if (dbConfigList.isEmpty()) {
             throw new RuntimeException("dbConfigList can not be empty!");
@@ -40,7 +39,7 @@ public class SingleMappedTable extends MappedTable {
         }
         TableConfig tableConfig = getTableConfig(dbConfig, getLocalTable());
         Columns localColumns = magicDb.getColumns(tableConfig);
-        Columns remoteColumns = dbSyncServer.getColumns(getRemoteDbIndex(), getRemoteTable());
+        Columns remoteColumns = syncServer.getColumns(getRemoteDbIndex(), getRemoteTable());
 
         Map<String, Column> remoteColumnsMap = new HashMap<>();
         for (Column remoteColumn : remoteColumns.getColumns()) {

@@ -1,6 +1,6 @@
 package com.github.pister.dbsync.config.mapping.table;
 
-import com.github.pister.dbsync.endpoint.server.DbSyncServer;
+import com.github.pister.dbsync.endpoint.server.SyncServer;
 import com.github.pister.dbsync.common.db.shard.ShardStrategy;
 import com.github.pister.dbsync.config.Column;
 import com.github.pister.dbsync.runtime.exec.Row;
@@ -15,7 +15,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.sql.SQLException;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -53,9 +52,9 @@ public class ShardMappedTable extends MappedTable {
     }
 
     @Override
-    public void check(DbSyncServer dbSyncServer, MagicDb magicDb, Map<Integer, DbConfig> localDbConfigs) throws SQLException {
+    public void check(SyncServer syncServer, MagicDb magicDb, Map<Integer, DbConfig> localDbConfigs) throws SQLException {
         log.warn("checking " + getLocalTable() + " ...");
-        final Columns remoteColumns = dbSyncServer.getColumns(getRemoteDbIndex(), getRemoteTable());
+        final Columns remoteColumns = syncServer.getColumns(getRemoteDbIndex(), getRemoteTable());
         if (remoteColumns == null) {
             throw new RuntimeException("can not found table: " + getRemoteTable() + " on the source db index: " + getRemoteDbIndex());
         }

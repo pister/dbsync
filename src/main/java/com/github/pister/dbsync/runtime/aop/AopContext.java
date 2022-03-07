@@ -13,6 +13,4 @@ public interface AopContext {
 
     Sequence getSequence(String name);
 
-    QueryProcessor getSourceQueryProcessor();
-
 }

@@ -4,8 +4,8 @@ import com.github.pister.dbsync.common.tools.util.MapUtil;
 import com.github.pister.dbsync.config.DbConfig;
 import com.github.pister.dbsync.config.mapping.TableTaskConfig;
 import com.github.pister.dbsync.endpoint.client.DbSyncClient;
-import com.github.pister.dbsync.endpoint.server.DbSyncServer;
-import com.github.pister.dbsync.endpoint.server.DefaultDbSyncServer;
+import com.github.pister.dbsync.endpoint.server.SyncServer;
+import com.github.pister.dbsync.endpoint.server.DefaultSyncServer;
 import com.github.pister.dbsync.runtime.sync.NopProcessListener;
 import com.github.pister.dbsync.runtime.sync.ProcessListener;
 import org.slf4j.Logger;
@@ -28,7 +28,7 @@ public class DbSyncManager {
 
     private static final Logger log = LoggerFactory.getLogger(DbSyncManager.class);
 
-    private DefaultDbSyncServer dbSyncServer = new DefaultDbSyncServer();
+    private DefaultSyncServer dbSyncServer = new DefaultSyncServer();
 
     private DbSyncClient dbSyncClient = new DbSyncClient();
 
@@ -86,13 +86,13 @@ public class DbSyncManager {
         dbSyncClient.setSequenceDbIndex(index);
     }
 
-    private DbSyncServer initTransferServer() throws SQLException {
+    private SyncServer initTransferServer() throws SQLException {
         dbSyncServer.init();
         return dbSyncServer;
     }
 
-    private DbSyncClient initTableTransferClient(DbSyncServer source) throws Exception {
-        dbSyncClient.setDbSyncServer(source);
+    private DbSyncClient initTableTransferClient(SyncServer source) throws Exception {
+        dbSyncClient.setSyncServer(source);
         dbSyncClient.setIgnoreCheck(ignoreCheck);
         dbSyncClient.init();
         return dbSyncClient;
@@ -107,7 +107,7 @@ public class DbSyncManager {
         if (!inited.compareAndSet(false, true)) {
             throw new RuntimeException("can not call init more than once!");
         }
-        DbSyncServer source = initTransferServer();
+        SyncServer source = initTransferServer();
         DbSyncClient dest = initTableTransferClient(source);
         final int poolSize = Math.min(dest.getTasks().size(), 5);
         this.dest = dest;

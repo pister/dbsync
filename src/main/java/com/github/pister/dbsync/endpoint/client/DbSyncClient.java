@@ -5,7 +5,7 @@ import com.github.pister.dbsync.config.mapping.table.MappedTable;
 import com.github.pister.dbsync.common.db.DbPool;
 import com.github.pister.dbsync.common.db.seq.LocalSequence;
 import com.github.pister.dbsync.common.db.MagicDb;
-import com.github.pister.dbsync.endpoint.server.DbSyncServer;
+import com.github.pister.dbsync.endpoint.server.SyncServer;
 import com.github.pister.dbsync.runtime.sync.*;
 import com.github.pister.dbsync.common.tools.util.CollectionUtil;
 import com.github.pister.dbsync.endpoint.base.AbstractPoint;
@@ -34,7 +34,7 @@ public class DbSyncClient extends AbstractPoint {
 
     private Map<String, MappedTable> /* taskName => MappedTable */ tables = MapUtil.newHashMap();
 
-    private DbSyncServer dbSyncServer;
+    private SyncServer syncServer;
 
     private MagicDb magicDb;
 
@@ -122,7 +122,7 @@ public class DbSyncClient extends AbstractPoint {
 
         initProgressManager();
 
-        tableSyncProcessor = new TableSyncProcessor(dbSyncServer,
+        tableSyncProcessor = new TableSyncProcessor(syncServer,
                 new MappedDestProcessor(localDbConfigs, saver, magicDb, dbPool),
                 progressManager, tables);
 
@@ -154,7 +154,7 @@ public class DbSyncClient extends AbstractPoint {
         log.warn("checking...");
         for (Map.Entry<String, MappedTable> entry : tables.entrySet()) {
             MappedTable mappedTable = entry.getValue();
-            mappedTable.check(dbSyncServer, magicDb, localDbConfigs);
+            mappedTable.check(syncServer, magicDb, localDbConfigs);
         }
 
         log.warn("check success.");
@@ -188,7 +188,7 @@ public class DbSyncClient extends AbstractPoint {
         return tables.keySet();
     }
 
-    public void setDbSyncServer(DbSyncServer dbSyncServer) {
-        this.dbSyncServer = dbSyncServer;
+    public void setSyncServer(SyncServer syncServer) {
+        this.syncServer = syncServer;
     }
 }

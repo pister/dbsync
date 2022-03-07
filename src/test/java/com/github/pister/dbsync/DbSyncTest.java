@@ -1,8 +1,8 @@
 package com.github.pister.dbsync;
 
 import com.github.pister.dbsync.endpoint.client.DbSyncClient;
-import com.github.pister.dbsync.endpoint.server.DbSyncServer;
-import com.github.pister.dbsync.endpoint.server.DefaultDbSyncServer;
+import com.github.pister.dbsync.endpoint.server.DefaultSyncServer;
+import com.github.pister.dbsync.endpoint.server.SyncServer;
 import com.github.pister.dbsync.runtime.aop.AopContext;
 import com.github.pister.dbsync.runtime.aop.BatchInterceptor;
 import com.github.pister.dbsync.runtime.aop.InterceptorResult;
@@ -31,8 +31,8 @@ import java.util.List;
  */
 public class DbSyncTest extends TestCase {
 
-    private DbSyncServer initTransferServer() throws SQLException {
-        DefaultDbSyncServer defaultTransferServer = new DefaultDbSyncServer();
+    private SyncServer initTransferServer() throws SQLException {
+        DefaultSyncServer defaultTransferServer = new DefaultSyncServer();
         defaultTransferServer.registerDbConfig(0, "127.0.0.1:3306/sample", "root", "123456");
         // defaultTransferServer.registerDbConfig(1, MySqlUtil.makeDbConfig("127.0.0.1:3306/sample_other_source", "root", "123456"));
         defaultTransferServer.init();
@@ -41,15 +41,15 @@ public class DbSyncTest extends TestCase {
     }
 
     public void testInitTransferServer() throws SQLException {
-        DbSyncServer dbSyncServer = initTransferServer();
-        System.out.println(dbSyncServer.dbNameList());
-        System.out.println(dbSyncServer.tableNameList(1));
+        SyncServer syncServer = initTransferServer();
+        System.out.println(syncServer.dbNameList());
+        System.out.println(syncServer.tableNameList(1));
     }
 
     public void testTransferSingleTable() throws Exception {
-        DbSyncServer dbSyncServer = initTransferServer();
+        SyncServer syncServer = initTransferServer();
         DbSyncClient dbSyncClient = new DbSyncClient();
-        dbSyncClient.setDbSyncServer(dbSyncServer);
+        dbSyncClient.setSyncServer(syncServer);
         dbSyncClient.registerLocalDb(0, "127.0.0.1:3306/sample2", "root", "123456");
         //  dbSyncClient.addLocalDb(MySqlUtil.makeDbConfig("test112.benshouyin.net/trans_test_01", "trans_test_user", "trans_test_pwd"));
         dbSyncClient.addTableTaskConfig(TableTaskConfig.makeSingle("my_sample_task", 0, "sample_pen", 0, "sample_pen"));
@@ -62,9 +62,9 @@ public class DbSyncTest extends TestCase {
 
 
     public void testTransferShardsTable() throws Exception {
-        DbSyncServer transferServer = initTransferServer();
+        SyncServer transferServer = initTransferServer();
         DbSyncClient tableTransferClient = new DbSyncClient();
-        tableTransferClient.setDbSyncServer(transferServer);
+        tableTransferClient.setSyncServer(transferServer);
         tableTransferClient.addLocalDb(MySqlUtil.makeDbConfig("test112.benshouyin.net/trans_test_00", "trans_test_user", "trans_test_pwd"));
         tableTransferClient.addLocalDb(MySqlUtil.makeDbConfig("test112.benshouyin.net/trans_test_01", "trans_test_user", "trans_test_pwd"));
         tableTransferClient.addTableTaskConfig(TableTaskConfig.makeOneTooManyShard("sports", 0, "qserver_sport", "trans_test_sport_%04d", "user_id", 2, 4));

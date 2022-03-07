@@ -1,6 +1,6 @@
 package com.github.pister.dbsync.config.mapping.table;
 
-import com.github.pister.dbsync.endpoint.server.DbSyncServer;
+import com.github.pister.dbsync.endpoint.server.SyncServer;
 import com.github.pister.dbsync.common.db.MagicDb;
 import com.github.pister.dbsync.runtime.aop.BatchInterceptor;
 import com.github.pister.dbsync.runtime.aop.RowInterceptor;
@@ -13,7 +13,6 @@ import org.slf4j.LoggerFactory;
 
 import java.sql.SQLException;
 import java.sql.Types;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -112,7 +111,7 @@ public abstract class MappedTable {
         return false;
     }
 
-    public abstract void check(DbSyncServer dbSyncServer, MagicDb magicDb, Map<Integer, DbConfig> localDbConfigs) throws SQLException;
+    public abstract void check(SyncServer syncServer, MagicDb magicDb, Map<Integer, DbConfig> localDbConfigs) throws SQLException;
 
 
     public int getRemoteDbIndex() {

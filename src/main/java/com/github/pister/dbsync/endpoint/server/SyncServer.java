@@ -11,7 +11,7 @@ import java.util.List;
 /**
  * Created by songlihuang on 2017/7/12.
  */
-public interface DbSyncServer {
+public interface SyncServer {
 
     List<String> dbNameList();
 
@@ -21,5 +21,4 @@ public interface DbSyncServer {
 
     ScanPageResult fetchForPage(int dbIndex, String tableName, Pagination pagination, String extSqlCondition);
 
-    QueryProcessor createQueryProcessor();
 }

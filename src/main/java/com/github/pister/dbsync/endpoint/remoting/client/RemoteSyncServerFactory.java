@@ -7,12 +7,12 @@ import com.github.pister.dbsync.common.tools.util.HessianSerializeUtil;
 import com.github.pister.dbsync.endpoint.auth.AuthUtil;
 import com.github.pister.dbsync.endpoint.remoting.Request;
 import com.github.pister.dbsync.endpoint.remoting.Response;
-import com.github.pister.dbsync.endpoint.server.DbSyncServer;
+import com.github.pister.dbsync.endpoint.server.SyncServer;
 
 /**
  * Created by songlihuang on 2017/7/13.
  */
-public class RemoteDbSyncServerFactory {
+public class RemoteSyncServerFactory {
 
     private ProtocolInvoker protocolInvoker;
 
@@ -46,9 +46,9 @@ public class RemoteDbSyncServerFactory {
         this.protocolInvoker = httpClientProtocolInvoker;
     }
 
-    public DbSyncServer createRemoteDbSyncServer() {
+    public SyncServer createSyncServer() {
         ProxyServiceFactory proxyServiceFactory = new ProxyServiceFactory(invoker);
-        return proxyServiceFactory.createProxy(Constants.DB_SYNC_SERVICE_NAME, DbSyncServer.class);
+        return proxyServiceFactory.createProxy(Constants.DB_SYNC_SERVICE_NAME, SyncServer.class);
     }
 
     public void setHttpClient(HttpClient httpClient) {

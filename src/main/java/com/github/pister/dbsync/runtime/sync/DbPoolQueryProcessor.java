@@ -8,6 +8,7 @@ import com.github.pister.dbsync.runtime.exec.RowProcessor;
 import com.github.pister.dbsync.common.db.shard.ShardInfo;
 import com.github.pister.dbsync.config.DbConfig;
 
+import java.io.Serializable;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
