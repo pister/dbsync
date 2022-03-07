@@ -3,7 +3,7 @@ package com.github.pister.dbsync;
 import com.github.pister.dbsync.common.tools.util.MapUtil;
 import com.github.pister.dbsync.config.DbConfig;
 import com.github.pister.dbsync.config.mapping.TableTaskConfig;
-import com.github.pister.dbsync.endpoint.client.DbSyncClient;
+import com.github.pister.dbsync.endpoint.client.SyncClient;
 import com.github.pister.dbsync.endpoint.server.SyncServer;
 import com.github.pister.dbsync.endpoint.server.DefaultSyncServer;
 import com.github.pister.dbsync.runtime.sync.NopProcessListener;
@@ -30,7 +30,7 @@ public class DbSyncManager {
 
     private DefaultSyncServer dbSyncServer = new DefaultSyncServer();
 
-    private DbSyncClient dbSyncClient = new DbSyncClient();
+    private SyncClient syncClient = new SyncClient();
 
     private boolean ignoreCheck = false;
 
@@ -40,7 +40,7 @@ public class DbSyncManager {
 
     private ConcurrentMap<String, Future<Integer>> runResultMap = MapUtil.newConcurrentHashMap();
 
-    private DbSyncClient dest;
+    private SyncClient dest;
 
     private ProcessListener processListener = new NopProcessListener();
 
@@ -65,7 +65,7 @@ public class DbSyncManager {
      * @param dbConfig
      */
     public void registerDestDbConfig(int index, DbConfig dbConfig) {
-        dbSyncClient.registerLocalDb(index, dbConfig);
+        syncClient.registerLocalDb(index, dbConfig);
     }
 
     /**
@@ -74,7 +74,7 @@ public class DbSyncManager {
      * @param tableTaskConfig
      */
     public void addTask(TableTaskConfig tableTaskConfig) {
-        dbSyncClient.addTableTaskConfig(tableTaskConfig);
+        syncClient.addTableTaskConfig(tableTaskConfig);
     }
 
     /**
@@ -83,7 +83,7 @@ public class DbSyncManager {
      * @param index
      */
     public void setDestSeqDbIndex(int index) {
-        dbSyncClient.setSequenceDbIndex(index);
+        syncClient.setSequenceDbIndex(index);
     }
 
     private SyncServer initTransferServer() throws SQLException {
@@ -91,11 +91,11 @@ public class DbSyncManager {
         return dbSyncServer;
     }
 
-    private DbSyncClient initTableTransferClient(SyncServer source) throws Exception {
-        dbSyncClient.setSyncServer(source);
-        dbSyncClient.setIgnoreCheck(ignoreCheck);
-        dbSyncClient.init();
-        return dbSyncClient;
+    private SyncClient initTableTransferClient(SyncServer source) throws Exception {
+        syncClient.setSyncServer(source);
+        syncClient.setIgnoreCheck(ignoreCheck);
+        syncClient.init();
+        return syncClient;
     }
 
     public void setIgnoreCheck(boolean ignoreCheck) {
@@ -108,7 +108,7 @@ public class DbSyncManager {
             throw new RuntimeException("can not call init more than once!");
         }
         SyncServer source = initTransferServer();
-        DbSyncClient dest = initTableTransferClient(source);
+        SyncClient dest = initTableTransferClient(source);
         final int poolSize = Math.min(dest.getTasks().size(), 5);
         this.dest = dest;
         this.executorService = new ThreadPoolExecutor(poolSize, poolSize,

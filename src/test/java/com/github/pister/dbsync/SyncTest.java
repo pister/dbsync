@@ -1,6 +1,6 @@
 package com.github.pister.dbsync;
 
-import com.github.pister.dbsync.endpoint.client.DbSyncClient;
+import com.github.pister.dbsync.endpoint.client.SyncClient;
 import com.github.pister.dbsync.endpoint.server.DefaultSyncServer;
 import com.github.pister.dbsync.endpoint.server.SyncServer;
 import com.github.pister.dbsync.runtime.aop.AopContext;
@@ -29,7 +29,7 @@ import java.util.List;
 /**
  * Created by songlihuang on 2021/2/18.
  */
-public class DbSyncTest extends TestCase {
+public class SyncTest extends TestCase {
 
     private SyncServer initTransferServer() throws SQLException {
         DefaultSyncServer defaultTransferServer = new DefaultSyncServer();
@@ -48,22 +48,23 @@ public class DbSyncTest extends TestCase {
 
     public void testTransferSingleTable() throws Exception {
         SyncServer syncServer = initTransferServer();
-        DbSyncClient dbSyncClient = new DbSyncClient();
-        dbSyncClient.setSyncServer(syncServer);
-        dbSyncClient.registerLocalDb(0, "127.0.0.1:3306/sample2", "root", "123456");
-        //  dbSyncClient.addLocalDb(MySqlUtil.makeDbConfig("test112.benshouyin.net/trans_test_01", "trans_test_user", "trans_test_pwd"));
-        dbSyncClient.addTableTaskConfig(TableTaskConfig.makeSingle("my_sample_task", 0, "sample_pen", 0, "sample_pen"));
 
-        dbSyncClient.init();
+        SyncClient syncClient = new SyncClient();
+        syncClient.setSyncServer(syncServer);
+        syncClient.registerLocalDb(0, "127.0.0.1:3306/sample2", "root", "123456");
+        //  syncClient.addLocalDb(MySqlUtil.makeDbConfig("test112.benshouyin.net/trans_test_01", "trans_test_user", "trans_test_pwd"));
+        syncClient.addTableTaskConfig(TableTaskConfig.makeSingle("my_sample_task", 0, "sample_pen", 0, "sample_pen"));
 
-        dbSyncClient.exec("my_sample_task");
+        syncClient.init();
+
+        syncClient.exec("my_sample_task");
     }
     /*
 
 
     public void testTransferShardsTable() throws Exception {
         SyncServer transferServer = initTransferServer();
-        DbSyncClient tableTransferClient = new DbSyncClient();
+        SyncClient tableTransferClient = new SyncClient();
         tableTransferClient.setSyncServer(transferServer);
         tableTransferClient.addLocalDb(MySqlUtil.makeDbConfig("test112.benshouyin.net/trans_test_00", "trans_test_user", "trans_test_pwd"));
         tableTransferClient.addLocalDb(MySqlUtil.makeDbConfig("test112.benshouyin.net/trans_test_01", "trans_test_user", "trans_test_pwd"));

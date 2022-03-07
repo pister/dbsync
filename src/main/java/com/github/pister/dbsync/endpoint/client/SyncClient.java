@@ -26,7 +26,7 @@ import java.util.Set;
 /**
  * Created by songlihuang on 2021/1/24.
  */
-public class DbSyncClient extends AbstractPoint {
+public class SyncClient extends AbstractPoint {
 
     private Map<Integer, DbConfig> localDbConfigs = MapUtil.newHashMap();
 
@@ -126,7 +126,7 @@ public class DbSyncClient extends AbstractPoint {
                 new MappedDestProcessor(localDbConfigs, saver, magicDb, dbPool),
                 progressManager, tables);
 
-        log.warn("DbSyncClient init success.");
+        log.warn("SyncClient init success.");
     }
 
 
